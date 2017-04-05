@@ -3,10 +3,10 @@ var https = require("https");
 
 function bearerHandler(res) {
   const statusCode = res.statusCode;
-  var location;
+  var location = res.headers.location;
 
   if(statusCode == 301) {
-    location = /(.*:\/\/)?(.+\.com)(.+)/.exec(res.headers.location)
+    location = /(.*:\/\/)?(.+\.com)(.+)/.exec(location);
     options = {
       host: location[2],
       path: location[3],
@@ -17,6 +17,7 @@ function bearerHandler(res) {
       console.log(`problem with request: ${e.message}`);
     });
     req.end();
+    res.resume();
     return;
   }
 
