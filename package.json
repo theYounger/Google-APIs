@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/theYounger/Google-APIs/issues"
   },
-  "homepage": "https://github.com/theYounger/Google-APIs#readme"
+  "homepage": "https://github.com/theYounger/Google-APIs#readme",
+  "devDependencies": {
+    "asynquence": "^0.10.0"
+  }
 }
