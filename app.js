@@ -1,10 +1,13 @@
-var cred = require("./cred");
 var https = require("https");
 var fs = require("fs");
 var ASQ = require("asynquence");
-var twitList = require("./csv-reader.js");
-var fileData = twitList.getFileData("twitter-list.csv")
-var userIDs = twitList.getUserIDs(fileData);
+var cred = require("./cred");
+var fileReader = require("./file-reader.js");
+var fileResults = fileReader.getFileData("./lists/twitter-list.csv")
+var userIDs = fileReader.getUserIDs(fileResults);
+var obj = {
+  table: []
+};
 
 function queryHandler(res) {
   const status = {
@@ -23,6 +26,7 @@ function queryHandler(res) {
     .on("end", function() {
       var parsedData = JSON.parse(rawData);
       var pushData = {};
+
       for(let i in parsedData) {
         if(i === "status") {
           break;
@@ -31,23 +35,19 @@ function queryHandler(res) {
           pushData[i] = parsedData[i];
         }
       }
-      console.log(pushData);
-      twitObj.twitTable.push(pushData);
-      if(twitObj.twitTable.length === userIDs.length)  {
+      obj.table.push(pushData);
+      if(obj.table.length === userIDs.length)  {
         ASQ()
           .then(function(done) {
-            var str = JSON.stringify(twitObj, null, "\t");
-            fs.writeFile("twitter-list.json", str, 'utf8', function() {
-              console.log("write-file finished");
+            var str = JSON.stringify(obj, null, "\t");
+            fs.writeFile("./lists/twitter-list.json", str, 'utf8', function() {
+              console.log("Write file complete");
             })
           });
       }
     });
 }
 
-var twitObj = {
-  twitTable: []
-};
 for(var i = 0; i < userIDs.length; i++) {
   var options = {
     host: "api.twitter.com",
@@ -58,7 +58,7 @@ for(var i = 0; i < userIDs.length; i++) {
     }
   }
   https.request(options, queryHandler)
-    .on("error", function eHandler(e) {
+    .on("error", function(e) {
       console.log(`problem with request: ${e.massage}`);
     })
     .end();
