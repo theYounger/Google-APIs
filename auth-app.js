@@ -1,7 +1,7 @@
 const https = require("https");
 const cred = require("./cred");
 
-const consumerCred = new Buffer(`${cred.consumerKey}:${cred.consumerSecret}`).toString("base64");
+const consumerCred = new Buffer(`${cred.getConsumerKey()}:${cred.getConsumerSecret()}`).toString("base64");
 
 function getBearerToken(res){
   const status = {
@@ -24,6 +24,12 @@ function getBearerToken(res){
         var tokenTypeError = new Error(`Unexpected token type: ${tokenType}`)
         throw tokenTypeError;
       }
+      if(bearerToken.access_token === cred.getBearerToken()) {
+        console.log("Current bearer token is still valid.");
+        return;
+      }
+      cred.setBearerToken(bearerToken.access_token);
+      console.log("New bearer token received!");
     });
 }
 
