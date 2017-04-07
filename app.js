@@ -1,16 +1,16 @@
-var https = require("https");
-var fs = require("fs");
-var ASQ = require("asynquence");
-var cred = require("./cred");
-var fileReader = require("./file-reader.js");
-var fileResults = fileReader.getFileData("./lists/twitter-list.csv")
-var userIDs = fileReader.getUserIDs(fileResults);
-var obj = {
-  table: []
+const https = require("https");
+const fs = require("fs");
+const ASQ = require("asynquence");
+const cred = require("./cred.js");
+const CSVParser = require("./CSV-parser.js");
+const usrIDsArr = CSVParser.getUsrIDs("./lists/twitter-list.csv");
+var JSONObj = {
+  dataArr: []
 };
 
-function queryHandler(res) {
-  const status = {
+function apiQuerier(res) {
+  var writefileName = "./lists/twitter-list.json";
+  var status = {
     code: res.statusCode,
     message: res.statusMessage
   }
@@ -20,46 +20,49 @@ function queryHandler(res) {
 
   var rawData = "";
   res
-    .on("data", function(chunk) {
+    .on("data", function whenData(chunk) {
       rawData += chunk;
     })
-    .on("end", function() {
+    .on("end", function whenEnd() {
       var parsedData = JSON.parse(rawData);
-      var pushData = {};
+      var usr = {};
 
       for(let i in parsedData) {
         if(i === "status") {
           break;
         }
-        if(i !== "entities") {
-          pushData[i] = parsedData[i];
+        if(typeof parsedData[i] !== "object") {
+          usr[i] = parsedData[i];
         }
       }
-      obj.table.push(pushData);
-      if(obj.table.length === userIDs.length)  {
+      JSONObj.dataArr.push(usr);
+
+      if(JSONObj.dataArr.length === condition)  {
         ASQ()
-          .then(function(done) {
-            var str = JSON.stringify(obj, null, "\t");
-            fs.writeFile("./lists/twitter-list.json", str, 'utf8', function() {
-              console.log("Write file complete");
-            })
+          .then(function writeJSONFile(done) {
+            var JSONstr = JSON.stringify(JSONObj, null, "\t");
+            fs.writeFile(writefileName, JSONstr, 'utf8', function writeDone() {
+              console.log("Write file completed");
+              done();
+            });
           });
       }
     });
 }
 
-for(var i = 0; i < userIDs.length; i++) {
-  var options = {
-    host: "api.twitter.com",
-    path: `/1.1/users/show.json?user_id=${userIDs[i]}`,
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${cred.bearerToken}`
-    }
+var options = {
+  host: "api.twitter.com",
+  method: "GET",
+  headers: {
+    "Authorization": `Bearer ${cred.bearerToken}`
   }
-  https.request(options, queryHandler)
-    .on("error", function(e) {
-      console.log(`problem with request: ${e.massage}`);
+}
+const condition = usrIDsArr.length;
+for(let i = 0; i < condition; i++) {
+  options.path = `/1.1/users/show.json?user_id=${usrIDsArr[i]}`
+  https.request(options, apiQuerier)
+    .on("error", function whenError(error) {
+      console.log(`problem with request: ${error.massage}`);
     })
     .end();
 }
