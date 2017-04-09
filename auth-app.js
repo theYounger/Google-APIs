@@ -1,4 +1,4 @@
-lconst https = require("https");
+const https = require("https");
 const cred = require("./cred");
 
 const consumerCred = new Buffer(`${cred.getConsumerKey()}:${cred.getConsumerSecret()}`).toString("base64");

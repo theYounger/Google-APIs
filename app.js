@@ -4,11 +4,12 @@ const ASQ = require("asynquence");
 const cred = require("./cred.js");
 const CSVParser = require("./CSV-parser.js");
 const usrIDsArr = CSVParser.getUsrIDs("./lists/twitter-list.csv");
+const queries = require("./queries/userQuery.js");
 var JSONObj = {
   dataArr: []
 };
 
-function apiQuerier(res) {
+function userQuery(res) {
   var writefileName = "./lists/twitter-list.json";
   var status = {
     code: res.statusCode,
@@ -50,6 +51,22 @@ function apiQuerier(res) {
     });
 }
 
+function __followerQuery() {
+  var writefileName = "./lists/twitter-followers.json";
+  const status = {
+    code: res.statusCode,
+    message: res.statusMessage,
+  }
+  if(status.code !== 200) {
+    console.log(status.code, status.message);
+  }
+
+  var rawData = "";
+  res.on("data", function whenData() {
+
+  })
+}
+
 var options = {
   host: "api.twitter.com",
   method: "GET",
@@ -60,7 +77,7 @@ var options = {
 const condition = usrIDsArr.length;
 for(let i = 0; i < condition; i++) {
   options.path = `/1.1/users/show.json?user_id=${usrIDsArr[i]}`
-  https.request(options, apiQuerier)
+  https.request(options, queries.userQuery)
     .on("error", function whenError(error) {
       console.log(`problem with request: ${error.massage}`);
     })

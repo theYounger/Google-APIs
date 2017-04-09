@@ -19,5 +19,10 @@
   "homepage": "https://github.com/theYounger/Google-APIs#readme",
   "devDependencies": {
     "asynquence": "^0.10.0"
+  },
+  "dependencies": {
+    "pg": "^6.1.5",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^3.30.4"
   }
 }
